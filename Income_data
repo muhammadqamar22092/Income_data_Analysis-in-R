@@ -1,41 +1,53 @@
 # Load required libraries
+# The 'dplyr' library is used for data manipulation tasks such as filtering, summarizing, and rearranging data.
+# The 'ggplot2' library is used for data visualization tasks such as creating charts and plots.
 library(dplyr)
 library(ggplot2)
 
 # Set working directory and load the dataset
+# Set the working directory to the specified path where the dataset is located.
+# Load the dataset 'Income_Data.csv' into the R environment as a data frame named 'income_data'.
 setwd("C:/Users/hp/Documents/R_Lab_Assignmnet")
 income_data <- read.csv("Income_Data.csv")
 
 # Calculate the number of rows and columns
+# Calculate the number of rows (observations) and columns (variables) in the 'income_data' data frame.
 num_rows <- nrow(income_data)
 num_columns <- ncol(income_data)
 
 # Print the result
+# Display the calculated number of rows and columns in the console.
 cat("Number of Rows:", num_rows, "\n")
 cat("Number of Columns:", num_columns, "\n")
 
 # Convert specified variables to factor variables
+# Convert the 'state', 'county', and 'county_FIPS' columns in the 'income_data' data frame to factor variables.
 income_data$state <- as.factor(income_data$state)
 income_data$county <- as.factor(income_data$county)
 income_data$county_FIPS <- as.factor(income_data$county_FIPS)
 
 # Print the summary of the dataset
+# Display the summary statistics of the 'income_data' data frame, including the minimum, 1st quartile, median, mean, 3rd quartile, and maximum values for each variable.
 print(summary(income_data))
 
 # Calculate summary statistics for numeric columns
+# Select all numeric columns from the 'income_data' data frame and calculate the mean and standard deviation for each column.
 numeric_cols <- income_data %>% select(where(is.numeric))
 summary_stats <- numeric_cols %>% summarise_all(list(mean = mean, sd = sd), na.rm = TRUE)
 print(summary_stats)
 
 # Calculate population
+# Calculate the population for each observation by dividing the number of individuals with a bachelor's degree by the percentage of individuals with a bachelor's degree and multiplying by 100.
 income_data <- income_data %>%
   mutate(Population = (bachelor_degree_numbers_2020 / bachelor_degree_percentage_2020) * 100)
 
 # Print summary of the "Population" column
+# Display the summary statistics of the 'Population' column in the 'income_data' data frame.
 cat("Summary of Population:\n")
 print(summary(income_data$Population))
 
 # Calculate the average percentage of individuals with a bachelor's degree by state
+# Group the 'income_data' data frame by the 'state' column, calculate the total number of degree holders and the total population for each group, and then calculate the average percentage of individuals with a bachelor's degree for each state.
 state_degrees <- income_data %>%
   group_by(state) %>%
   summarise(
@@ -46,6 +58,7 @@ state_degrees <- income_data %>%
   arrange(desc(Average_Percentage))
 
 # Print and plot the average percentage of individuals with a bachelor's degree by state
+# Display the average percentage of individuals with a bachelor's degree for each state and create a bar plot to visualize the data.
 cat("Average Percentage of Bachelor's Degree Holders by State:\n")
 print(state_degrees$Average_Percentage)
 ggplot(state_degrees, aes(x = reorder(state, -Average_Percentage), y = Average_Percentage)) +
@@ -54,27 +67,7 @@ ggplot(state_degrees, aes(x = reorder(state, -Average_Percentage), y = Average_P
   labs(title = "Average Percentage of Bachelor's Degree Holders by State in 2020", x = "State", y = "Average Percentage")
 
 # Plot the scatter plot with a scatter plot line
+# Create a scatter plot to visualize the relationship between the percentage of individuals with a bachelor's degree and per capita personal income for each observation.
 ggplot(income_data, aes(x = bachelor_degree_percentage_2020, y = per_capita_personal_income_2020)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue") +
-  labs(title = "Scatter Plot of Per Capita Personal Income 2020 vs Bachelor's Degree Percentage 2020",
-       x = "Bachelor's Degree Percentage 2020",
-       y = "Per Capita Personal Income 2020") +
-  theme_minimal()
-
-# Calculate the total population for each state
-top_10_states <- income_data %>%
-  group_by(state) %>%
-  summarise(Total_Population = sum(Population, na.rm = TRUE)) %>%
-  arrange(desc(Total_Population)) %>%
-  head(10)
-
-# Filter data for only the top 10 states
-top_counties_by_income <- income_data %>%
-  filter(state %in% top_10_states$state) %>%
-  group_by(state) %>%
-  filter(per_capita_personal_income_2020 == max(per_capita_personal_income_2020)) %>%
-  select(state, county, per_capita_personal_income_2020)
-
-# Print the top counties by income
-print(top_counties_by_income)
+  geom_smooth(method = "lm
